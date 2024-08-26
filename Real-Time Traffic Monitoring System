@@ -1,0 +1,46 @@
+#Dfd Description
+[User] --> (Input Start & Destination) --> [Traffic Monitoring Application]
+[Traffic Monitoring Application] --> (Request Traffic Data) --> [Traffic API]
+[Traffic API] --> (Return Traffic Data) --> [Traffic Monitoring Application]
+[Traffic Monitoring Application] --> (Display Traffic Info) --> [Display Module]
+
+pip install requests #if you have ignore it
+
+import requests
+
+API_KEY = 'your_api_key'
+BASE_URL = 'https://maps.googleapis.com/maps/api/directions/json'
+
+def get_traffic_data(start_point, end_point):
+    url = f"{BASE_URL}?origin={start_point}&destination={end_point}&key={API_KEY}&traffic_model=best_guess"I
+    response = requests.get(url)    
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+def display_traffic_info(data):
+    if data and 'routes' in data and data['routes']:
+        route = data['routes'][0]
+        legs = route['legs'][0]
+        print(f"Start Address: {legs['start_address']}")
+        print(f"End Address: {legs['end_address']}")
+        print(f"Distance: {legs['distance']['text']}")
+        print(f"Duration: {legs['duration']['text']} (current traffic conditions)")
+        print(f"Duration in Traffic: {legs['duration_in_traffic']['text']}")
+        
+        if 'steps' in legs:
+            print("\nDetailed Directions:")
+            for step in legs['steps']:
+                print(f"- {step['html_instructions']} ({step['distance']['text']})")
+    else:
+        print("Unable to fetch traffic data. Please check your input or API key.")
+
+def main():
+    start_point = input("Enter starting point (address or coordinates): ")
+    end_point = input("Enter destination (address or coordinates): ")
+    traffic_data = get_traffic_data(start_point, end_point)
+    display_traffic_info(traffic_data)
+
+if __name__ == "__main__":
+    main()
