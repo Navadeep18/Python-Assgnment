@@ -1,0 +1,78 @@
+#Dfd Description
+
+[User] --> (Request Information/Reports) --> [Inventory Tracking Application]
+[Inventory Tracking Application] --> (Fetch Data) --> [Inventory Database]
+[Inventory Database] --> (Provide Data) --> [Inventory Tracking Application]
+[Inventory Tracking Application] --> (Generate Reports/Alerts) --> [Display Module]
+
+pip install pandas #If you have ignore
+
+import pandas as pd
+
+inventory_data = {
+    'ProductID': [1, 2, 3],
+    'ProductName': ['Widget A', 'Widget B', 'Widget C'],
+    'StockLevel': [50, 20, 10],
+    'ReorderPoint': [30, 15, 5],
+    'LeadTimeDays': [7, 5, 10],
+    'HistoricalSales': [200, 150, 100]
+}
+
+inventory_df = pd.DataFrame(inventory_data)
+
+def get_product_info(product_id):
+    product = inventory_df[inventory_df['ProductID'] == product_id]
+    if not product.empty:
+        return product.iloc[0]
+    else:
+        return None
+
+def calculate_reorder_quantity(stock_level, reorder_point, historical_sales, lead_time_days):
+    if stock_level < reorder_point:
+        average_daily_demand = historical_sales / 365
+        reorder_quantity = int(average_daily_demand * lead_time_days * 1.5)  # Adding safety stock
+        return reorder_quantity
+    return 0
+
+def generate_report():
+    report = []
+    for _, row in inventory_df.iterrows():
+        reorder_quantity = calculate_reorder_quantity(row['StockLevel'], row['ReorderPoint'], row['HistoricalSales'], row['LeadTimeDays'])
+        if reorder_quantity > 0:
+            report.append({
+                'ProductID': row['ProductID'],
+                'ProductName': row['ProductName'],
+                'StockLevel': row['StockLevel'],
+                'ReorderPoint': row['ReorderPoint'],
+                'ReorderQuantity': reorder_quantity
+            })
+    return pd.DataFrame(report)
+
+def main():
+    product_id = int(input("Enter product ID to check stock levels and reorder recommendation: "))
+    product_info = get_product_info(product_id)
+    
+    if product_info is not None:
+        print(f"Product: {product_info['ProductName']}")
+        print(f"Stock Level: {product_info['StockLevel']}")
+        print(f"Reorder Point: {product_info['ReorderPoint']}")
+        
+        reorder_quantity = calculate_reorder_quantity(
+            product_info['StockLevel'],
+            product_info['ReorderPoint'],
+            product_info['HistoricalSales'],
+            product_info['LeadTimeDays']
+        )
+        
+        if reorder_quantity > 0:
+            print(f"Recommended Reorder Quantity: {reorder_quantity}")
+        else:
+            print("No reorder needed.")
+    else:
+        print("Product not found.")
+    report_df = generate_report()
+    print("\nInventory Report:")
+    print(report_df)
+
+if __name__ == "__main__":
+    main()
