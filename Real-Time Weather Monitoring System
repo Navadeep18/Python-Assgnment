@@ -1,0 +1,45 @@
+#DFD Description
+
+[User] --> (Input Location) --> [Weather Monitoring Application]
+[Weather Monitoring Application] --> (Request Data) --> [Weather API]
+[Weather API] --> (Return Data) --> [Weather Monitoring Application]
+[Weather Monitoring Application] --> (Display Data) --> [Display Module]
+
+pip install requests
+#if you have then ignore it
+
+import requests
+API_KEY = 'your_api_key'
+BASE_URL = 'http://api.openweathermap.org/data/2.5/weather'
+
+def get_weather_data(location):
+    # Construct the API request URL
+    url = f"{BASE_URL}?q={location}&appid={API_KEY}&units=metric"   
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
+def display_weather(data):
+    if data:        
+        city = data['name']
+        temp = data['main']['temp']
+        weather = data['weather'][0]['description']
+        humidity = data['main']['humidity']
+        wind_speed = data['wind']['speed']        
+        print(f"Weather in {city}:")
+        print(f"Temperature: {temp}°C")
+        print(f"Weather: {weather}")
+        print(f"Humidity: {humidity}%")
+        print(f"Wind Speed: {wind_speed} m/s")
+    else:
+        print("Unable to fetch weather data. Please check your location or API key.")
+
+def main():
+        location = input("Enter city name or coordinates (lat,lon): ")
+    weather_data = get_weather_data(location)   
+    display_weather(weather_data)
+
+if __name__ == "__main__":
+    main()
